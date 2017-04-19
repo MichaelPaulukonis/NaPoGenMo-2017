@@ -18,8 +18,9 @@
   },
   "homepage": "https://github.com/michaelpaulukonis/napogenmo-2017#readme",
   "dependencies": {
-      "common-corpus": "github:michaelpaulukonis/common-corpus",
-      "underscore": "^1.8.3",
-      "random-seed": "0.3.0"
+    "commander": "2.9.0",
+    "common-corpus": "github:michaelpaulukonis/common-corpus",
+    "random-seed": "0.3.0",
+    "underscore": "^1.8.3"
   }
 }

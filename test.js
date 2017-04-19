@@ -1,119 +1,76 @@
-// let util = new require(`./util.js`)({statusVerbosity: 0, seed: options.config.seed });
-let util = new require(`./util.js`)({statusVerbosity: 0});
 
-// TODO: make this a module, as well....
-var reduceCorpora = function(texts) {
-  var strategies = [ corporaSevenStrategy,
-                     corporaSevenStrategy,
-                     corporaFilterStrategy(`oz|apocalypsenow`),
-                     corporaFilterStrategy(`finnegan|oz`),
-                     corporaFilterStrategy(`oz|egypt`),
-                     corporaFilterStrategy(`sms`),
-                     corporaFilterStrategy(`shakespeare`),
-                     corporaFilterStrategy(`cyberpunk`),
-                     corporaFilterStrategy(`western`),
-                     corporaFilterStrategy(`gertrudestein`),
-                     corporaFilterStrategy(`computerculture`),
-                     corporaFilterStrategy(`filmscripts`),
-                     corporaFilterStrategy(`spam`),
-                     corporaFilterStrategy(`spam.0`),
-                     corporaFilterStrategy(`2001`),
-                     corporaFilterStrategy(`odyssey`),
-                     corporaFilterStrategy(`singing`),
-                     corporaFilterStrategy(`egypt`),
-                     corporaFilterStrategy(`manifesto`),
-                     corporaFilterStrategy(`ascii|emoticon`),
-                     corporaFilterStrategy(`marx`),
-                     corporaFilterStrategy(`james.joyce`),
-                     corporaFilterStrategy(`poetry`),
-                     corporaFilterStrategy(`eliot`),
-                     corporaFilterStrategy(`imagist`),
-                     corporaFilterStrategy(`whitman`),
-                     corporaFilterStrategy(`longfellow`),
-                     corporaFilterStrategy(`moby`),
-                     corporaFilterStrategy(`pride.and.prejudice`),
-                     corporaFilterStrategy(`lowell`),
-                     corporaFilterStrategy(`rome`),
-                     corporaFilterStrategy(`sentences`)
-                   ],
-      strategy;
+let thingy = function(config) {
 
-  // not a parameter in the function. hrm.....
-  // if (config.corporaFilter) {
-    // strategy = corporaFilterStrategy(config.corporaFilter);
-  // } else {
-    strategy = util.pick(strategies);
+  let util = new require(`./util.js`)({statusVerbosity: 0, seed: config.seed});
+
+  let corpora = new require(`common-corpus`)(),
+      corpFilter = new require('./corpfilter')(util),
+      texts = corpFilter.reduceCorpora(corpora.texts, config.corporaFilter),
+      lsys = require('./lsys'),
+      walker = require('./textWalker'),
+      // source = 'APRIL is the cruellest month breeding Lilacs out of the dead land, mixing  Memory and desire, stirring Dull roots with spring rain. Winter kept us warm, covering Earth in forgetful snow, feeding A little life with dried tubers.',
+      source = texts.map(t => t.text()).join('\n'),
+      chars = 5000,
+      startPos = util.randomInRange(0, source.length - chars),
+      // TODO: blob may start in the middle of a word - discard up to the first space?
+      blob = (source.length <= chars ? source :  source.slice(startPos,startPos+chars)),
+      tokens = blob.split(' '),
+      ruleGen = new require('./rule.js')({util: util}),
+      ruleBlob = ruleGen.generate(),
+      seed = ruleBlob.start,
+      rules = ruleBlob.rules;
+  // TODO: make a bank of known working rulesets
+  // seed = '--PNP',
+  // rules = {"P":"P[++NTP]-P","T":"TT","+":"++"},
+  // rules: {
+  //   "start": "PP",
+  //   "rules": {
+  //     "P": "[PP][P]TNP"
+  //   },
+  //   "depth": 4
   // }
+  // TODO: unit-test the rule-gen?
+  // because it would be nice to algorithmically clean-up the rules (make them better)
 
-  return strategy(texts);
+  let instructions = lsys.applyRecursive(rules, seed, ruleBlob.depth),
+      output = walker.walkTokens(tokens, instructions);
+
+
+  // console.log(`output: ${JSON.stringify(output)}`);
+
+  let text = output
+        .map((token) => (token && token.match(/\t|\n/) ? token : token + ' '))
+        .join('')
+        .replace(/\t/g, '  ')
+        .trim();
+
+  // output = output.join(" ")
+  //     .replace(/\t/g, '  ');
+  // .replace(/\n/g, "<br>") // eh, this is webifying it
+  // .replace(/\t/g, "&nbsp;&nbsp;&nbsp;");
+
+  console.log(text);
+
+  console.log(`rules: ${JSON.stringify(ruleBlob,null,2)}\ninstructions: ${instructions}`);
+
 };
 
-// Todo: get a generic one to take in a numeric parameter
-var corporaSevenStrategy = function(corpus) {
-  var newCorpus = [];
+let config = {},
+    program = require(`commander`);
 
-  for (var i = 0; i < 7; i++) {
-    newCorpus.push(util.pickRemove(corpus));
-  }
+program
+  .version(`0.0.2`)
+  .option(`-c, --corporaFilter [string]`, `filename substring filter (non-case sensitive)`)
+  .option(`-s --seed [string]`, `seed for random generator`)
+  // .option(`-f --file [string]`, `external source file`)
+  .parse(process.argv);
 
-  return newCorpus;
-};
+if (program.corporaFilter) {
+  config.corporaFilter = program.corporaFilter;
+}
 
-// TODO: hrm. corpora now has a filter....
-var corporaFilterStrategy = function(filter) {
-  return function(corpus) {
-    var r = new RegExp(filter, `i`);
-    return corpus.filter(m => m.name.match(r) !== null);
-  };
-};
+if (program.seed) {
+  config.seed = program.seed;
+}
 
-
-let corpora = new require(`common-corpus`)(),
-    texts = reduceCorpora(corpora.texts),
-    lsys = require('./lsys'),
-    walker = require('./textWalker'),
-    // source = 'APRIL is the cruellest month breeding Lilacs out of the dead land, mixing  Memory and desire, stirring Dull roots with spring rain. Winter kept us warm, covering Earth in forgetful snow, feeding A little life with dried tubers.',
-    source = texts.map(t => t.text()).join('\n'),
-    chars = 5000,
-    startPos = util.randomInRange(0, source.length - chars),
-    // TODO: blob may start in the middle of a word - discard up to the first space?
-    blob = (source.length <= chars ? source :  source.slice(startPos,startPos+chars)),
-    tokens = blob.split(' '),
-    ruleGen = new require('./rule.js')({util: util}),
-    ruleBlob = ruleGen.generate(),
-    seed = ruleBlob.start,
-    rules = ruleBlob.rules;
-// TODO: make a bank of known working rulesets
-    // seed = '--PNP',
-// rules = {"P":"P[++NTP]-P","T":"TT","+":"++"},
-// rules: {
-//   "start": "PP",
-//   "rules": {
-//     "P": "[PP][P]TNP"
-//   },
-//   "depth": 4
-// }
-    // TODO: unit-test the rule-gen?
-    // because it would be nice to algorithmically clean-up the rules (make them better)
-
-var instructions = lsys.applyRecursive(rules, seed, ruleBlob.depth);
-var output = walker.walkTokens(tokens, instructions);
-
-
-// console.log(`output: ${JSON.stringify(output)}`);
-
-let text = output
-      .map((token) => (token && token.match(/\t|\n/) ? token : token + ' '))
-      .join('')
-      .replace(/\t/g, '  ')
-      .trim();
-
-
-// output = output.join(" ")
-//     .replace(/\t/g, '  ');
-// .replace(/\n/g, "<br>") // eh, this is webifying it
-// .replace(/\t/g, "&nbsp;&nbsp;&nbsp;");
-
-console.log(text);
-
-console.log(`rules: ${JSON.stringify(ruleBlob,null,2)}\ninstructions: ${instructions}`);
+thingy(config);
