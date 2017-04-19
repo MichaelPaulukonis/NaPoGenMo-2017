@@ -79,12 +79,8 @@ let corpora = new require(`common-corpus`)(),
     // TODO: blob may start in the middle of a word - discard up to the first space?
     blob = (source.length <= chars ? source :  source.slice(startPos,startPos+chars)),
     tokens = blob.split(' '),
-    // TODO: look @ https://github.com/Objelisks/lsystembot/blob/master/generator.js
-    // TODO: pass in seed to ruleGen
-    // TODO: rules can go negative
-    // in which case, we get a lot of 'undefined's in the output
-    ruleGen = require('./rule.js'),
-    ruleBlob = ruleGen(),
+    ruleGen = new require('./rule.js')({util: util}),
+    ruleBlob = ruleGen.generate(),
     seed = ruleBlob.start,
     rules = ruleBlob.rules;
 // TODO: make a bank of known working rulesets
@@ -103,7 +99,6 @@ let corpora = new require(`common-corpus`)(),
 var instructions = lsys.applyRecursive(rules, seed, ruleBlob.depth);
 var output = walker.walkTokens(tokens, instructions);
 
-console.log(`rules: ${JSON.stringify(ruleBlob,null,2)}\ninstructions: ${instructions}`);
 
 // console.log(`output: ${JSON.stringify(output)}`);
 
@@ -120,3 +115,5 @@ let text = output
 // .replace(/\t/g, "&nbsp;&nbsp;&nbsp;");
 
 console.log(text);
+
+console.log(`rules: ${JSON.stringify(ruleBlob,null,2)}\ninstructions: ${instructions}`);
