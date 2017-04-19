@@ -1,9 +1,14 @@
+// from https://github.com/aparrish/linear-lsystem-poetry
+// modified slightly
 'use strict';
+
+// TODO: I don't think underscore is really required anymore for that _.each....
 var _ = require('underscore');
 var lsys = require('./lsys');
 
 function wrapped(list, index) {
-    return list[index % list.length];
+  index = index >= 0 ? index : list.length - index; // trap for negative indexes
+  return list[index % list.length];
 }
 
 function walkTokens(tokens, instructions) {

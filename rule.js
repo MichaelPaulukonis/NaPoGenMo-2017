@@ -1,3 +1,4 @@
+// based on code from https://github.com/Objelisks/lsystembot/blob/master/generator.js
 let util = new require(`./util.js`)({statusVerbosity: 0});
 
 function chooseRandom(arr) {
@@ -45,6 +46,8 @@ let generate = function() {
       system.rules[char] = ruleStr;
     }
   });
+
+  system.depth = util.randomInRange(1,5);
 
   return system;
 

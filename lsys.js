@@ -1,3 +1,6 @@
+// from https://github.com/aparrish/linear-lsystem-poetry
+// modified slightly
+
 'use strict';
 var _ = require('underscore');
 
