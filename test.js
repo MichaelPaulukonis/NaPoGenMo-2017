@@ -87,8 +87,16 @@ let corpora = new require(`common-corpus`)(),
     ruleBlob = ruleGen(),
     seed = ruleBlob.start,
     rules = ruleBlob.rules;
+// TODO: make a bank of known working rulesets
     // seed = '--PNP',
-    // rules = {"P":"P[++NTP]-P","T":"TT","+":"++"},
+// rules = {"P":"P[++NTP]-P","T":"TT","+":"++"},
+// rules: {
+//   "start": "PP",
+//   "rules": {
+//     "P": "[PP][P]TNP"
+//   },
+//   "depth": 4
+// }
     // TODO: unit-test the rule-gen?
     // because it would be nice to algorithmically clean-up the rules (make them better)
 
@@ -97,7 +105,7 @@ var output = walker.walkTokens(tokens, instructions);
 
 console.log(`rules: ${JSON.stringify(ruleBlob,null,2)}\ninstructions: ${instructions}`);
 
-console.log(`output: ${JSON.stringify(output)}`);
+// console.log(`output: ${JSON.stringify(output)}`);
 
 let text = output
       .map((token) => (token && token.match(/\t|\n/) ? token : token + ' '))

@@ -1,18 +1,18 @@
 // based on code from https://github.com/Objelisks/lsystembot/blob/master/generator.js
-let util = new require(`./util.js`)({statusVerbosity: 0});
+let util = new require(`./util.js`)({statusVerbosity: 0, seed: '1231'});
 
 function chooseRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return util.pick(arr);
 }
 
 function genRandomString(min, max, charSet) {
-  var length = Math.floor(Math.random() * (max - min)) + min;
-  var str = '';
+  let length = util.randomInRange(min, max),
+      str = '';
 
   for(var i = 0; i < length; i++) {
     var char = chooseRandom(charSet);
     if(char === ']') {
-      var insertIndex = Math.floor(Math.random()*(str.length));
+      var insertIndex = util.random(str.length-1);
       str = str.substring(0, insertIndex) + '[' + str.substring(insertIndex);
     }
     str += char;
@@ -25,13 +25,13 @@ let generate = function() {
   var killOrder = ['a', 'iter'];
   var charSet = ['P'];
   // var alphabet = 'ABCDEGHIJKLMNOPQRSTUVWXYZ'.split('');
-  var alphabet = 'PPPPNT'.split('');
+  var alphabet = 'PPPPNT+-'.split('');
   var controlCharSet = ['N', 'T', '+', '-', ']'];
   var i, index;
 
-  var extraSymbols = Math.floor(Math.random()*5) + 1;
+  var extraSymbols = util.randomInRange(1,5);
   for(i = 0; i < extraSymbols; i++) {
-    index = Math.floor(Math.random()*alphabet.length);
+    index = util.random(alphabet.length-1);
     charSet.push(alphabet.splice(index, 1)[0]);
   }
 
@@ -52,7 +52,5 @@ let generate = function() {
   return system;
 
 };
-
-// console.log(JSON.stringify(generate(), null, 2));
 
 module.exports = generate;
