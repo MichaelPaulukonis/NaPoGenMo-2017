@@ -8,7 +8,6 @@ let thingy = function(config) {
       texts = corpFilter.reduceCorpora(corpora.texts, config.corporaFilter),
       lsys = require('./lsys'),
       walker = require('./textWalker'),
-      // source = 'APRIL is the cruellest month breeding Lilacs out of the dead land, mixing  Memory and desire, stirring Dull roots with spring rain. Winter kept us warm, covering Earth in forgetful snow, feeding A little life with dried tubers.',
       source = texts.map(t => t.text()).join('\n'),
       chars = 5000,
       startPos = util.randomInRange(0, source.length - chars),
@@ -29,8 +28,12 @@ let thingy = function(config) {
   //   },
   //   "depth": 4
   // }
+  // rules: {"start":"P","rules":{"P":"P+P[PN]T","T":"PP"}} depth: 5
+  //
   // TODO: unit-test the rule-gen?
   // because it would be nice to algorithmically clean-up the rules (make them better)
+  // T*N => N
+  // -+|+- => <nothing>
 
   let instructions = lsys.applyRecursive(rules, seed, ruleBlob.depth),
       output = walker.walkTokens(tokens, instructions);
