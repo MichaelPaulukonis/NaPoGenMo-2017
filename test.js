@@ -28,8 +28,8 @@ let thingy = function(config) {
   //   },
   //   "depth": 4
   // }
-  // rules: {"start":"P","rules":{"P":"P+P[PN]T","T":"PP"}} depth: 5
-  //
+  // rules: {"start":"P","rules":{"P":"P+P[PN]T","T":"PP"}, depth: 5 }
+  // rules: {"start":"+010010","rules":{"0":"010","1":"0[++0P]0","+":"++","-":"--P","P":"-1[P1]-"}, "depth":5}
   // TODO: unit-test the rule-gen?
   // because it would be nice to algorithmically clean-up the rules (make them better)
   // T*N => N
